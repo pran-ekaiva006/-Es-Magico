@@ -19,11 +19,10 @@ A lightweight, full-stack CRM dashboard for managing sales leads, logging discus
 
 - **Node.js** ≥ 18 (tested on v20)
 - **npm** ≥ 9
-- (Optional) **Docker** & **Docker Compose** for containerised setup
 
 ---
 
-## Setup (without Docker)
+## Setup
 
 ### 1. Clone the repository
 
@@ -55,16 +54,6 @@ npm run dev
 ```
 
 Open **http://localhost:5173** — the Vite proxy forwards `/api` requests to the backend automatically.
-
----
-
-## Setup (with Docker)
-
-```bash
-docker compose up --build
-```
-
-This starts both services and exposes the app on **http://localhost:5173**.
 
 ---
 
@@ -122,6 +111,28 @@ npm test
 
 ---
 
+## Screenshots
+
+### Dashboard — Lead List with Pinned Follow-ups
+
+![Dashboard](docs/screenshots/01-dashboard.png)
+
+The main view shows all leads with status badges, time-ago timestamps, and today's follow-ups pinned at the top in a highlighted section. Overdue follow-ups are marked with a red left border.
+
+### Add New Lead Modal
+
+![Add Lead Modal](docs/screenshots/02-add-lead-modal.png)
+
+A clean modal overlay for creating new leads with required name validation, optional company and phone fields, and the default "New" status badge.
+
+### Lead Timeline Dialog
+
+![Timeline Dialog](docs/screenshots/03-timeline-dialog.png)
+
+Click any lead to open the timeline dialog showing the full discussion history in reverse chronological order. Change the status via dropdown, log new notes, and optionally set follow-up dates — all within the same dialog.
+
+---
+
 ## Project Structure
 
 ```
@@ -158,14 +169,9 @@ npm test
 │   ├── vite.config.js
 │   └── package.json
 │
+├── docs/screenshots/          # App screenshots
 └── README.md
 ```
-
----
-
-## Screenshots / Demo
-
-> _Screenshots or a video walkthrough will be added here._
 
 ---
 
