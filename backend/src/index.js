@@ -19,8 +19,8 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// TODO: Mount routes here
-// app.use("/api/leads", require("./routes/leads"));
+// Routes
+app.use("/api/leads", require("./routes/leads"));
 
 // 404 fallback
 app.use((req, res) => {
