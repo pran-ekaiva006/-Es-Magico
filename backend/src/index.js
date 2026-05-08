@@ -1,10 +1,13 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const db = require("./db");
+const { db, migrate } = require("./db");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Run DB migrations before the server starts
+migrate();
 
 // Middleware
 app.use(cors());
