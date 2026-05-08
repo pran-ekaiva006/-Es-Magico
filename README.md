@@ -1,6 +1,9 @@
 # ⚡ LeadFlow — Lead Management Tool
 
-A lightweight, full-stack CRM dashboard for managing sales leads, logging discussions, and tracking follow-ups. Built as a single-screen app with a React frontend and Express + SQLite backend. Leads are sorted with today's follow-ups pinned to the top, overdue items highlighted, and status changes applied optimistically for a snappy user experience.
+> **🚀 Live Demo: [https://esmagico-seven.vercel.app/](https://esmagico-seven.vercel.app/)**  
+> **🔌 API: [https://es-magico.onrender.com/api/leads](https://es-magico.onrender.com/api/leads)**
+
+A lightweight, full-stack CRM dashboard for managing sales leads, logging discussions, and tracking follow-ups. Built as a single-screen app with a React frontend and Express + Turso (cloud SQLite) backend. Leads are sorted with today's follow-ups pinned to the top, overdue items highlighted, and status changes applied optimistically for a snappy user experience.
 
 ---
 
@@ -8,8 +11,10 @@ A lightweight, full-stack CRM dashboard for managing sales leads, logging discus
 
 | Layer | Technology |
 |-------|-----------|
-| **Backend** | Node.js, Express, SQLite ([better-sqlite3](https://github.com/WiseLibs/better-sqlite3)) |
+| **Backend** | Node.js, Express, [@libsql/client](https://github.com/tursodatabase/libsql-client-ts) |
+| **Database** | [Turso](https://turso.tech/) (cloud SQLite — free tier) |
 | **Frontend** | React 19, Vite 8 |
+| **Hosting** | Vercel (frontend) + Render (backend) |
 | **Testing** | Jest + Supertest (backend), Vitest + React Testing Library (frontend) |
 | **Utilities** | date-fns (time formatting) |
 
@@ -36,8 +41,19 @@ cd -Es-Magico
 ```bash
 cd backend
 npm install
-cp .env.example .env      # PORT=3001, DATABASE_URL=./data/leadflow.db
-npm run seed               # Populate DB with sample leads & discussions
+```
+
+Create a `.env` file inside the `backend/` folder:
+```env
+PORT=3001
+TURSO_DATABASE_URL=your_turso_database_url
+TURSO_AUTH_TOKEN=your_turso_auth_token
+```
+
+> Get your Turso credentials by running: `turso db show <dbname>` and `turso db tokens create <dbname>`
+
+```bash
+npm run seed               # Populate Turso DB with sample leads & discussions
 npm start                  # Production: node src/index.js
 # or
 npm run dev                # Dev mode with --watch auto-reload
@@ -53,7 +69,7 @@ npm install
 npm run dev
 ```
 
-Open **http://localhost:5173** — the Vite proxy forwards `/api` requests to the backend automatically.
+Open **http://localhost:5173**.
 
 ---
 
@@ -104,10 +120,11 @@ npm test
 - **⚡ Optimistic status updates** — status badge updates instantly in the list; auto-reverts on API failure
 - **💀 Skeleton loader** — shimmer animation while leads are loading (no layout shift)
 - **🔔 Error toast** — fixed top banner with auto-dismiss (4 s) for any API failure
-- **🔄 Atomic follow-up sync** — setting a follow-up on a discussion atomically updates the lead record in a single SQLite transaction
+- **🔄 Atomic follow-up sync** — setting a follow-up on a discussion atomically updates the lead record in a single transaction
 - **📐 Responsive layout** — 760 px centered card, collapses gracefully on mobile
 - **🧪 Full test coverage** — 28 tests across backend (14) and frontend (14)
 - **🗄️ Safe migrations** — `ALTER TABLE` migration handles existing DBs that pre-date schema changes
+- **☁️ Cloud deployment** — Frontend on Vercel, Backend on Render, Database on Turso (all free tier)
 
 ---
 
@@ -140,15 +157,14 @@ Click any lead to open the timeline dialog showing the full discussion history i
 │   ├── src/
 │   │   ├── index.js          # Server entry point
 │   │   ├── app.js            # Express app factory
-│   │   ├── db.js             # SQLite connection + migrations
-│   │   ├── seed.js           # Sample data seeder
+│   │   ├── db.js             # Turso/libsql connection + migrations
+│   │   ├── seed.js           # Sample data seeder (runs against Turso)
 │   │   ├── routes/
-│   │   │   └── leads.js      # All API routes
+│   │   │   └── leads.js      # All API routes (async)
 │   │   └── __tests__/
-│   │       ├── setup.js      # In-memory DB for tests
+│   │       ├── setup.js      # Local file DB for tests
 │   │       └── leads.test.js # 14 integration tests
-│   ├── data/                  # SQLite DB file (gitignored)
-│   ├── .env.example
+│   ├── .env                   # TURSO_DATABASE_URL + TURSO_AUTH_TOKEN (gitignored)
 │   └── package.json
 │
 ├── frontend/
