@@ -2,36 +2,35 @@ const Database = require("better-sqlite3");
 const path = require("path");
 const fs = require("fs");
 
-// Resolve the DB path from DATABASE_URL env var (relative to project root)
-const dbPath = path.resolve(
-  __dirname,
-  "..",
-  process.env.DATABASE_URL || "./data/leadflow.db"
-);
+const rawUrl = process.env.DATABASE_URL || "./data/leadflow.db";
+const isMemory = rawUrl === ":memory:";
 
-// Ensure the data directory exists
-const dbDir = path.dirname(dbPath);
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
+let db;
+
+if (isMemory) {
+  // In-memory DB for tests — no file I/O, no WAL mode
+  db = new Database(":memory:");
+} else {
+  const dbPath = path.resolve(__dirname, "..", rawUrl);
+  const dbDir = path.dirname(dbPath);
+  if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+  }
+  db = new Database(dbPath);
+  // WAL mode improves concurrent read performance (file DBs only)
+  db.pragma("journal_mode = WAL");
 }
 
-// Open (or create) the SQLite database
-const db = new Database(dbPath);
-
-// Enable WAL mode for better concurrent read performance
-db.pragma("journal_mode = WAL");
-
-console.log(`📦 SQLite connected: ${dbPath}`);
+if (!isMemory) {
+  console.log(`📦 SQLite connected: ${path.resolve(__dirname, "..", rawUrl)}`);
+}
 
 /**
  * migrate() — Creates all required tables if they don't already exist.
- * Called once at app startup.
- *
- * IDs are UUIDs generated via crypto.randomUUID() at insert time.
+ * Called once at app startup (and in tests via the app factory).
  */
 function migrate() {
   db.exec(`
-    -- Leads table
     CREATE TABLE IF NOT EXISTS leads (
       id             TEXT PRIMARY KEY,
       name           TEXT NOT NULL,
@@ -43,7 +42,6 @@ function migrate() {
       created_at     DATETIME NOT NULL DEFAULT (datetime('now'))
     );
 
-    -- Discussions table (linked to a lead)
     CREATE TABLE IF NOT EXISTS discussions (
       id         TEXT PRIMARY KEY,
       lead_id    TEXT NOT NULL,
@@ -53,7 +51,9 @@ function migrate() {
     );
   `);
 
-  console.log("✅ Database migration complete (tables: leads, discussions)");
+  if (!isMemory) {
+    console.log("✅ Database migration complete (tables: leads, discussions)");
+  }
 }
 
 module.exports = { db, migrate };
