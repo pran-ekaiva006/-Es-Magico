@@ -141,5 +141,90 @@ router.patch("/:id/status", (req, res) => {
   }
 });
 
-module.exports = router;
+// ─── Discussions ────────────────────────────────────────────────────────────
 
+/**
+ * GET /api/leads/:id/discussions
+ * Returns all discussions for a lead sorted by created_at DESC.
+ * 404 if the lead doesn't exist.
+ */
+router.get("/:id/discussions", (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const lead = db.prepare("SELECT id FROM leads WHERE id = ?").get(id);
+    if (!lead) return res.status(404).json({ error: "Lead not found" });
+
+    const discussions = db
+      .prepare(
+        `SELECT * FROM discussions
+         WHERE lead_id = ?
+         ORDER BY created_at DESC`
+      )
+      .all(id);
+
+    return res.status(200).json(discussions);
+  } catch (err) {
+    console.error("[GET /api/leads/:id/discussions]", err);
+    return res.status(500).json({ error: "Failed to fetch discussions" });
+  }
+});
+
+/**
+ * POST /api/leads/:id/discussions
+ *
+ * Body: { note (required), follow_up_date?, follow_up_time? }
+ * - Inserts a new discussion linked to the lead.
+ * - If follow_up_date is provided, also updates the lead's follow_up_date
+ *   and follow_up_time (both ops run in a single transaction).
+ * Returns 201 with the new discussion object.
+ */
+router.post("/:id/discussions", (req, res) => {
+  try {
+    const { id } = req.params;
+    const { note, follow_up_date = null, follow_up_time = null } = req.body;
+
+    // Validate note
+    if (!note || typeof note !== "string" || note.trim() === "") {
+      return res.status(400).json({ error: "Note is required" });
+    }
+
+    // Check lead exists
+    const lead = db.prepare("SELECT id FROM leads WHERE id = ?").get(id);
+    if (!lead) return res.status(404).json({ error: "Lead not found" });
+
+    const { randomUUID } = require("crypto");
+    const discussionId = randomUUID();
+
+    const insertAndSync = db.transaction(() => {
+      // Insert discussion
+      db.prepare(`
+        INSERT INTO discussions (id, lead_id, note)
+        VALUES (@id, @lead_id, @note)
+      `).run({ id: discussionId, lead_id: id, note: note.trim() });
+
+      // Sync follow-up back onto the lead if provided
+      if (follow_up_date) {
+        db.prepare(`
+          UPDATE leads
+          SET follow_up_date = @follow_up_date,
+              follow_up_time = @follow_up_time
+          WHERE id = @id
+        `).run({ follow_up_date, follow_up_time, id });
+      }
+    });
+
+    insertAndSync();
+
+    const discussion = db
+      .prepare("SELECT * FROM discussions WHERE id = ?")
+      .get(discussionId);
+
+    return res.status(201).json(discussion);
+  } catch (err) {
+    console.error("[POST /api/leads/:id/discussions]", err);
+    return res.status(500).json({ error: "Failed to create discussion" });
+  }
+});
+
+module.exports = router;
