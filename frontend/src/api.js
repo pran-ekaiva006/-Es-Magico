@@ -5,7 +5,7 @@
  * Each function throws on non-2xx responses with the error message from the API.
  */
 
-const BASE = "/api";
+const BASE = import.meta.env.VITE_API_URL || "https://es-magico.onrender.com/api";
 
 // ─── Internal helper ─────────────────────────────────────────────────────────
 
