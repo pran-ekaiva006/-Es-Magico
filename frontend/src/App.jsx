@@ -189,7 +189,7 @@ export default function App() {
             ))}
           </div>
         ) : (
-          <LeadList leads={leads} onSelectLead={handleSelectLead} />
+          <LeadList leads={leads} onSelectLead={handleSelectLead} searchQuery={debouncedSearch} />
         )}
       </main>
 

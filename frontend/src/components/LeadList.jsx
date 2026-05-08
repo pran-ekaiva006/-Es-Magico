@@ -41,12 +41,16 @@ function formatTime(timeStr) {
   return `${display}:${m} ${ampm}`;
 }
 
-export default function LeadList({ leads, onSelectLead }) {
+export default function LeadList({ leads, onSelectLead, searchQuery }) {
   if (!leads || leads.length === 0) {
     return (
       <div className="lead-list-empty">
         <span className="lead-list-empty__icon">📋</span>
-        <p>No leads found</p>
+        {searchQuery ? (
+          <p>No leads found for "<strong>{searchQuery}</strong>"</p>
+        ) : (
+          <p>No leads found</p>
+        )}
       </div>
     );
   }
