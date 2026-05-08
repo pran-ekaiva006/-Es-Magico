@@ -107,5 +107,39 @@ router.post("/", (req, res) => {
   }
 });
 
+/**
+ * PATCH /api/leads/:id/status
+ *
+ * Body: { status }
+ * Returns 400 for invalid status, 404 if lead not found, 200 with updated lead.
+ */
+router.patch("/:id/status", (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    // Validate status presence + enum
+    if (!status || !VALID_STATUSES.includes(status)) {
+      return res.status(400).json({
+        error: `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}`,
+      });
+    }
+
+    // Check lead exists
+    const existing = db.prepare("SELECT id FROM leads WHERE id = ?").get(id);
+    if (!existing) {
+      return res.status(404).json({ error: "Lead not found" });
+    }
+
+    db.prepare("UPDATE leads SET status = ? WHERE id = ?").run(status, id);
+
+    const updated = db.prepare("SELECT * FROM leads WHERE id = ?").get(id);
+    return res.status(200).json(updated);
+  } catch (err) {
+    console.error("[PATCH /api/leads/:id/status]", err);
+    return res.status(500).json({ error: "Failed to update lead status" });
+  }
+});
+
 module.exports = router;
 
