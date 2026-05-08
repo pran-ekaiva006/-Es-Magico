@@ -1,16 +1,13 @@
 /**
- * api.js — Centralised API helpers for the LeadFlow frontend.
+ * api.js — Frontend API layer for LeadFlow.
  *
- * All functions return parsed JSON. Errors are thrown so callers
- * can handle them in try/catch or .catch() blocks.
- *
- * The Vite dev proxy forwards /api → http://localhost:3001,
- * so we use relative paths everywhere.
+ * All functions use fetch with relative URLs (proxied by Vite → localhost:3001).
+ * Each function throws on non-2xx responses with the error message from the API.
  */
 
 const BASE = "/api";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Internal helper ─────────────────────────────────────────────────────────
 
 async function request(url, options = {}) {
   const res = await fetch(url, {
@@ -21,9 +18,7 @@ async function request(url, options = {}) {
   const body = await res.json();
 
   if (!res.ok) {
-    const err = new Error(body.error || `Request failed (${res.status})`);
-    err.status = res.status;
-    throw err;
+    throw new Error(body.error || `Request failed with status ${res.status}`);
   }
 
   return body;
@@ -31,8 +26,13 @@ async function request(url, options = {}) {
 
 // ─── Leads ────────────────────────────────────────────────────────────────────
 
-/** Fetch all leads. Supports optional { status, search } filters. */
-export function getLeads({ status, search } = {}) {
+/**
+ * GET /api/leads
+ * @param {string} [status] - Filter by lead status
+ * @param {string} [search] - Search by lead name
+ * @returns {Promise<Array>} Array of lead objects
+ */
+export async function getLeads(status, search) {
   const params = new URLSearchParams();
   if (status) params.set("status", status);
   if (search) params.set("search", search);
@@ -40,16 +40,25 @@ export function getLeads({ status, search } = {}) {
   return request(`${BASE}/leads${qs ? `?${qs}` : ""}`);
 }
 
-/** Create a new lead. */
-export function createLead(data) {
+/**
+ * POST /api/leads
+ * @param {Object} data - { name, company?, phone?, status? }
+ * @returns {Promise<Object>} The newly created lead
+ */
+export async function createLead(data) {
   return request(`${BASE}/leads`, {
     method: "POST",
     body: JSON.stringify(data),
   });
 }
 
-/** Update a lead's status. */
-export function updateLeadStatus(id, status) {
+/**
+ * PATCH /api/leads/:id/status
+ * @param {string} id   - Lead UUID
+ * @param {string} status - New status value
+ * @returns {Promise<Object>} The updated lead
+ */
+export async function updateStatus(id, status) {
   return request(`${BASE}/leads/${id}/status`, {
     method: "PATCH",
     body: JSON.stringify({ status }),
@@ -58,14 +67,23 @@ export function updateLeadStatus(id, status) {
 
 // ─── Discussions ──────────────────────────────────────────────────────────────
 
-/** Fetch all discussions for a given lead. */
-export function getDiscussions(leadId) {
-  return request(`${BASE}/leads/${leadId}/discussions`);
+/**
+ * GET /api/leads/:id/discussions
+ * @param {string} id - Lead UUID
+ * @returns {Promise<Array>} Array of discussion objects (newest first)
+ */
+export async function getDiscussions(id) {
+  return request(`${BASE}/leads/${id}/discussions`);
 }
 
-/** Add a discussion (with optional follow-up date sync). */
-export function addDiscussion(leadId, data) {
-  return request(`${BASE}/leads/${leadId}/discussions`, {
+/**
+ * POST /api/leads/:id/discussions
+ * @param {string} id   - Lead UUID
+ * @param {Object} data - { note, follow_up_date?, follow_up_time? }
+ * @returns {Promise<Object>} The newly created discussion
+ */
+export async function addDiscussion(id, data) {
+  return request(`${BASE}/leads/${id}/discussions`, {
     method: "POST",
     body: JSON.stringify(data),
   });
