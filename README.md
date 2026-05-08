@@ -128,6 +128,12 @@ npm test
 
 ---
 
+## Use of AI
+
+This project was built with the assistance of an AI coding assistant (Antigravity, powered by Google Deepmind). AI was used to accelerate development across several areas — including initial component scaffolding, writing and debugging the async Turso database layer, generating unit and integration test cases, and producing the seed script with realistic sample data. All AI-generated output was reviewed, understood, and deliberately integrated by the author. The architecture decisions, feature design, and overall direction of the project remained entirely human-driven.
+
+---
+
 ## Screenshots
 
 ### Dashboard — Lead List with Pinned Follow-ups
@@ -188,6 +194,15 @@ Click any lead to open the timeline dialog showing the full discussion history i
 ├── docs/screenshots/          # App screenshots
 └── README.md
 ```
+
+---
+
+## About the Author
+
+Built by **Pranjal Kumar Verma** — a full-stack developer passionate about clean code, great UX, and shipping things that actually work.
+
+- 🐙 GitHub: [github.com/pran-ekaiva006](https://github.com/pran-ekaiva006)
+- 🌐 Live Project: [esmagico-seven.vercel.app](https://esmagico-seven.vercel.app/)
 
 ---
 
