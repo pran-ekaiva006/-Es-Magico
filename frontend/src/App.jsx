@@ -16,6 +16,22 @@ export default function App() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
+  const [error, setError] = useState(null);
+  const errorTimer = useRef(null);
+
+  // ── Error toast (auto-dismiss 4s) ──────────────────────────────────────────
+
+  function showError(message) {
+    setError(message);
+    if (errorTimer.current) clearTimeout(errorTimer.current);
+    errorTimer.current = setTimeout(() => setError(null), 4000);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (errorTimer.current) clearTimeout(errorTimer.current);
+    };
+  }, []);
 
   // ── Debounce search (300ms) ────────────────────────────────────────────────
   const debounceRef = useRef(null);
@@ -30,7 +46,6 @@ export default function App() {
     }, 300);
   }
 
-  // Clean up timer on unmount
   useEffect(() => {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -46,7 +61,7 @@ export default function App() {
       const data = await getLeads(status, search);
       setLeads(data);
     } catch (err) {
-      console.error("Failed to fetch leads:", err);
+      showError(err.message || "Failed to load leads");
     } finally {
       setLoading(false);
     }
@@ -59,22 +74,53 @@ export default function App() {
   // ── Handlers ───────────────────────────────────────────────────────────────
 
   async function handleCreateLead(formData) {
-    await createLead(formData);
-    await fetchLeads();
+    try {
+      await createLead(formData);
+      await fetchLeads();
+    } catch (err) {
+      showError(err.message || "Failed to create lead");
+      throw err; // re-throw so the modal can show its own error state
+    }
   }
 
   function handleSelectLead(lead) {
     setSelectedLead(lead);
   }
 
+  // Optimistic status update: immediately patch the leads array
+  function handleOptimisticStatusUpdate(leadId, newStatus) {
+    setLeads((prev) =>
+      prev.map((l) => (l.id === leadId ? { ...l, status: newStatus } : l))
+    );
+  }
+
   function handleDialogUpdated() {
-    fetchLeads(); // refresh the list when status/notes change
+    fetchLeads();
+  }
+
+  function handleDialogError(message) {
+    showError(message);
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="app">
+      {/* ── Error toast ────────────────────────────────────────────────── */}
+      {error && (
+        <div className="app__toast" role="alert">
+          <span className="app__toast-icon">⚠️</span>
+          <span className="app__toast-msg">{error}</span>
+          <button
+            className="app__toast-close"
+            onClick={() => setError(null)}
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <header className="app__header">
         <div className="app__header-inner">
@@ -134,9 +180,13 @@ export default function App() {
       {/* ── Lead list ───────────────────────────────────────────────────── */}
       <main className="app__content">
         {loading ? (
-          <div className="app__loading">
-            <div className="app__spinner" />
-            <span>Loading leads…</span>
+          <div className="app__skeleton">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="app__skeleton-row">
+                <div className="app__skeleton-line app__skeleton-line--title" />
+                <div className="app__skeleton-line app__skeleton-line--subtitle" />
+              </div>
+            ))}
           </div>
         ) : (
           <LeadList leads={leads} onSelectLead={handleSelectLead} />
@@ -156,6 +206,8 @@ export default function App() {
           lead={selectedLead}
           onClose={() => setSelectedLead(null)}
           onUpdated={handleDialogUpdated}
+          onOptimisticStatus={handleOptimisticStatusUpdate}
+          onError={handleDialogError}
         />
       )}
     </div>

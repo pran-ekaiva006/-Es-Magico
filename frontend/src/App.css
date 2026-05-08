@@ -196,30 +196,103 @@
   overflow: hidden;
 }
 
-/* ─── Loading ──────────────────────────────────────────────────────────────── */
+/* ─── Error toast ──────────────────────────────────────────────────────────── */
 
-.app__loading {
+.app__toast {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 520px;
+  width: calc(100% - 32px);
+  padding: 12px 16px;
+  margin-top: 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.15);
+  animation: toast-slide 0.25s ease-out;
+}
+
+@keyframes toast-slide {
+  from { opacity: 0; transform: translateX(-50%) translateY(-100%); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.app__toast-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.app__toast-msg {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #991b1b;
+  flex: 1;
+}
+
+.app__toast-close {
+  width: 22px;
+  height: 22px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 64px 24px;
-  color: var(--text-muted);
-  font-size: 0.88rem;
+  border: none;
+  background: transparent;
+  color: #b91c1c;
+  font-size: 0.7rem;
+  cursor: pointer;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: background 0.12s;
 }
 
-.app__spinner {
-  width: 28px;
-  height: 28px;
-  border: 3px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+.app__toast-close:hover {
+  background: #fee2e2;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+/* ─── Skeleton loader ──────────────────────────────────────────────────────── */
+
+.app__skeleton {
+  padding: 4px 0;
+}
+
+.app__skeleton-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.app__skeleton-row:last-child {
+  border-bottom: none;
+}
+
+.app__skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.app__skeleton-line--title {
+  width: 55%;
+  height: 14px;
+}
+
+.app__skeleton-line--subtitle {
+  width: 80%;
+}
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* ─── Responsive ───────────────────────────────────────────────────────────── */

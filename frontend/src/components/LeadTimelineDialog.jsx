@@ -5,7 +5,7 @@ import "./LeadTimelineDialog.css";
 
 const STATUSES = ["New", "Contacted", "Qualified", "Proposal Sent", "Won", "Lost"];
 
-export default function LeadTimelineDialog({ lead, onClose, onUpdated }) {
+export default function LeadTimelineDialog({ lead, onClose, onUpdated, onOptimisticStatus, onError }) {
   const [discussions, setDiscussions] = useState([]);
   const [status, setStatus] = useState(lead.status);
   const [loading, setLoading] = useState(true);
@@ -42,12 +42,17 @@ export default function LeadTimelineDialog({ lead, onClose, onUpdated }) {
     const prevStatus = status;
     setStatus(newStatus);
 
+    // Optimistic: immediately update badge in parent lead list
+    if (onOptimisticStatus) onOptimisticStatus(lead.id, newStatus);
+
     try {
       await updateStatus(lead.id, newStatus);
       onUpdated();
     } catch (err) {
-      setStatus(prevStatus); // rollback on failure
-      console.error("Failed to update status:", err);
+      // Rollback local + parent
+      setStatus(prevStatus);
+      if (onOptimisticStatus) onOptimisticStatus(lead.id, prevStatus);
+      if (onError) onError(err.message || "Failed to update status");
     }
   }
 
