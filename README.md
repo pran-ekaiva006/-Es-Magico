@@ -130,7 +130,7 @@ npm test
 
 ## Use of AI
 
-This project was built with the assistance of an AI coding assistant (Antigravity, powered by Google Deepmind). AI was used to accelerate development across several areas — including initial component scaffolding, writing and debugging the async Turso database layer, generating unit and integration test cases, and producing the seed script with realistic sample data. All AI-generated output was reviewed, understood, and deliberately integrated by the author. The architecture decisions, feature design, and overall direction of the project remained entirely human-driven.
+I used AI tools during this project to speed things up — mainly for boilerplate setup, writing tests, and figuring out the async Turso migration (that part had some tricky bits). That said, I read through everything it generated, tweaked what didn't make sense, and made all the actual design and architecture calls myself. The AI was more like a fast pair-programmer than a replacement for thinking.
 
 ---
 
