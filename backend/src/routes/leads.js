@@ -65,4 +65,47 @@ router.get("/", (req, res) => {
   }
 });
 
+const VALID_STATUSES = ["New", "Contacted", "Qualified", "Proposal Sent", "Won", "Lost"];
+
+/**
+ * POST /api/leads
+ *
+ * Body: { name (required), company?, phone?, status? }
+ * Returns the newly created lead with 201.
+ */
+router.post("/", (req, res) => {
+  try {
+    const { name, company = null, phone = null, status = "New" } = req.body;
+
+    // Validate name
+    if (!name || typeof name !== "string" || name.trim() === "") {
+      return res.status(400).json({ error: "Name is required" });
+    }
+
+    // Validate status
+    if (!VALID_STATUSES.includes(status)) {
+      return res.status(400).json({
+        error: `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}`,
+      });
+    }
+
+    const { randomUUID } = require("crypto");
+    const id = randomUUID();
+
+    db.prepare(`
+      INSERT INTO leads (id, name, company, phone, status)
+      VALUES (@id, @name, @company, @phone, @status)
+    `).run({ id, name: name.trim(), company, phone, status });
+
+    // Return the full inserted row
+    const lead = db.prepare("SELECT * FROM leads WHERE id = ?").get(id);
+
+    return res.status(201).json(lead);
+  } catch (err) {
+    console.error("[POST /api/leads]", err);
+    return res.status(500).json({ error: "Failed to create lead" });
+  }
+});
+
 module.exports = router;
+
