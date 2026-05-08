@@ -77,18 +77,20 @@ export default function App() {
     <div className="app">
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <header className="app__header">
-        <div className="app__header-left">
-          <h1 className="app__logo">
-            <span className="app__logo-icon">⚡</span> LeadFlow
-          </h1>
-          <span className="app__subtitle">CRM Dashboard</span>
+        <div className="app__header-inner">
+          <div className="app__header-left">
+            <h1 className="app__logo">
+              <span className="app__logo-icon">⚡</span> LeadFlow
+            </h1>
+            <span className="app__subtitle">CRM Dashboard</span>
+          </div>
+          <button
+            className="app__add-btn"
+            onClick={() => setShowAddModal(true)}
+          >
+            + Add New Lead
+          </button>
         </div>
-        <button
-          className="app__add-btn"
-          onClick={() => setShowAddModal(true)}
-        >
-          + Add New Lead
-        </button>
       </header>
 
       {/* ── Toolbar: filters + search ───────────────────────────────────── */}

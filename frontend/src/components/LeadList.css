@@ -3,62 +3,54 @@
 .lead-list-sections {
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
+
+/* ─── Section headers ──────────────────────────────────────────────────────── */
 
 .lead-list-section__title {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.82rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-secondary, #64748b);
-  padding: 0 4px 8px;
+  color: var(--text-muted, #94a3b8);
+  padding: 14px 20px 8px;
   margin: 0;
 }
 
 .lead-list-section__count {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 600;
   color: #fff;
-  background: var(--accent, #6366f1);
-  border-radius: 999px;
-  padding: 1px 8px;
+  background: var(--text-muted, #94a3b8);
+  border-radius: var(--radius-pill, 999px);
+  padding: 1px 7px;
   line-height: 1.4;
+}
+
+.lead-list-section--pinned .lead-list-section__title {
+  color: #92400e;
 }
 
 .lead-list-section--pinned .lead-list-section__count {
   background: #f59e0b;
 }
 
-/* ─── Pinned list + row ────────────────────────────────────────────────────── */
+/* ─── Pinned section ───────────────────────────────────────────────────────── */
 
-.lead-list--pinned {
-  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-  border-radius: 12px;
-  padding: 6px;
+.lead-list-section--pinned {
+  background: linear-gradient(180deg, #fffbeb 0%, #fef9ee 100%);
+  border-bottom: 1px solid #fde68a;
 }
 
-.lead-list__row--pinned {
-  border-left-color: #f59e0b;
-  background: rgba(255, 255, 255, 0.85);
-}
-
-.lead-list__row--pinned:hover {
-  background: rgba(255, 255, 255, 0.95);
-}
-
-/* ─── LeadList ─────────────────────────────────────────────────────────────── */
+/* ─── Lead list ────────────────────────────────────────────────────────────── */
 
 .lead-list {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
 }
 
 /* ─── Row ──────────────────────────────────────────────────────────────────── */
@@ -66,24 +58,29 @@
 .lead-list__row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 14px 18px;
-  background: var(--card-bg, #fff);
-  border-left: 4px solid transparent;
-  border-radius: 10px;
+  gap: 5px;
+  padding: 14px 20px;
+  background: transparent;
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid var(--border-light, #f1f5f9);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.lead-list__row:last-child {
+  border-bottom: none;
 }
 
 .lead-list__row:hover {
-  background: var(--card-hover, #f5f7ff);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background: var(--card-hover, #f8fafc);
 }
 
 .lead-list__row:focus-visible {
-  outline: 2px solid var(--accent, #6366f1);
-  outline-offset: 2px;
+  outline: 2px solid var(--accent, #4f46e5);
+  outline-offset: -2px;
 }
+
+/* ─── Overdue row ──────────────────────────────────────────────────────────── */
 
 .lead-list__row--overdue {
   border-left-color: #ef4444;
@@ -92,6 +89,12 @@
 
 .lead-list__row--overdue:hover {
   background: #fee2e2;
+}
+
+/* ─── Pinned row ───────────────────────────────────────────────────────────── */
+
+.lead-list__row--pinned {
+  border-left-color: #f59e0b;
 }
 
 /* ─── Header (name + badge) ───────────────────────────────────────────────── */
@@ -105,7 +108,7 @@
 
 .lead-list__name {
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--text-primary, #1e293b);
   white-space: nowrap;
   overflow: hidden;
@@ -115,19 +118,19 @@
 .lead-list__company {
   font-weight: 400;
   color: var(--text-muted, #94a3b8);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
 }
 
-/* ─── Status badge ─────────────────────────────────────────────────────────── */
+/* ─── Status badges ────────────────────────────────────────────────────────── */
 
 .lead-list__badge {
   flex-shrink: 0;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill, 999px);
   white-space: nowrap;
 }
 
@@ -148,7 +151,7 @@
 
 .lead-list__badge--orange {
   color: #c2410c;
-  background: #fff7ed;
+  background: #ffedd5;
 }
 
 .lead-list__badge--teal {
@@ -171,7 +174,7 @@
 }
 
 .lead-list__note {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--text-secondary, #64748b);
   white-space: nowrap;
   overflow: hidden;
@@ -181,7 +184,7 @@
 
 .lead-list__time {
   flex-shrink: 0;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-muted, #94a3b8);
   white-space: nowrap;
 }
@@ -191,16 +194,17 @@
 .lead-list__followup {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.78rem;
+  gap: 5px;
+  font-size: 0.74rem;
   font-weight: 500;
-  padding: 4px 10px;
-  border-radius: 6px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm, 6px);
   width: fit-content;
+  margin-top: 2px;
 }
 
 .lead-list__followup--today {
-  color: #b45309;
+  color: #92400e;
   background: #fef3c7;
 }
 
@@ -210,16 +214,16 @@
 }
 
 .lead-list__bell {
-  font-size: 0.85rem;
-  animation: bell-ring 2s ease-in-out infinite;
+  font-size: 0.8rem;
+  animation: bell-ring 2.5s ease-in-out infinite;
 }
 
 @keyframes bell-ring {
   0%, 100% { transform: rotate(0deg); }
-  5% { transform: rotate(14deg); }
-  10% { transform: rotate(-14deg); }
-  15% { transform: rotate(10deg); }
-  20% { transform: rotate(-8deg); }
+  5% { transform: rotate(12deg); }
+  10% { transform: rotate(-12deg); }
+  15% { transform: rotate(8deg); }
+  20% { transform: rotate(-6deg); }
   25% { transform: rotate(0deg); }
 }
 
@@ -231,14 +235,14 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 48px 24px;
+  padding: 56px 24px;
   color: var(--text-muted, #94a3b8);
 }
 
 .lead-list-empty__icon {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
 }
 
 .lead-list-empty p {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
