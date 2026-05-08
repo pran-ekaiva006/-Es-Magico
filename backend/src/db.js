@@ -53,6 +53,21 @@ function migrate() {
     );
   `);
 
+  // ── Additive migrations for existing DBs ────────────────────────────────
+  // If the discussions table existed before follow_up columns were added,
+  // ALTER TABLE to add the missing columns safely.
+  const cols = db
+    .prepare("PRAGMA table_info(discussions)")
+    .all()
+    .map((c) => c.name);
+
+  if (!cols.includes("follow_up_date")) {
+    db.exec("ALTER TABLE discussions ADD COLUMN follow_up_date TEXT");
+  }
+  if (!cols.includes("follow_up_time")) {
+    db.exec("ALTER TABLE discussions ADD COLUMN follow_up_time TEXT");
+  }
+
   if (!isMemory) {
     console.log("✅ Database migration complete (tables: leads, discussions)");
   }
