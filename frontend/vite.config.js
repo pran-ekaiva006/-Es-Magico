@@ -6,7 +6,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     watch: {
-      // Use polling instead of fsevents (fixes native module issues on macOS)
       usePolling: true,
       interval: 100,
     },
@@ -14,5 +13,10 @@ export default defineConfig({
       '/api': 'http://localhost:3001',
       '/health': 'http://localhost:3001',
     },
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/__tests__/setup.js',
   },
 })
