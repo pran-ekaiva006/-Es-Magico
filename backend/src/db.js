@@ -1,36 +1,26 @@
-const Database = require("better-sqlite3");
-const path = require("path");
-const fs = require("fs");
+const { createClient } = require("@libsql/client");
+require("dotenv").config();
 
-const rawUrl = process.env.DATABASE_URL || "./data/leadflow.db";
-const isMemory = rawUrl === ":memory:";
+const url = process.env.TURSO_DATABASE_URL || "file:./data/leadflow.db";
+const authToken = process.env.TURSO_AUTH_TOKEN;
 
-let db;
+const isMemory = url.includes(":memory:");
 
-if (isMemory) {
-  // In-memory DB for tests — no file I/O, no WAL mode
-  db = new Database(":memory:");
-} else {
-  const dbPath = path.resolve(__dirname, "..", rawUrl);
-  const dbDir = path.dirname(dbPath);
-  if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
-  }
-  db = new Database(dbPath);
-  // WAL mode improves concurrent read performance (file DBs only)
-  db.pragma("journal_mode = WAL");
-}
+const db = createClient({
+  url,
+  authToken,
+});
 
 if (!isMemory) {
-  console.log(`📦 SQLite connected: ${path.resolve(__dirname, "..", rawUrl)}`);
+  console.log(`📦 Turso SQLite connected: ${url}`);
 }
 
 /**
  * migrate() — Creates all required tables if they don't already exist.
- * Called once at app startup (and in tests via the app factory).
+ * Called once at app startup (and in tests).
  */
-function migrate() {
-  db.exec(`
+async function migrate() {
+  await db.executeMultiple(`
     CREATE TABLE IF NOT EXISTS leads (
       id             TEXT PRIMARY KEY,
       name           TEXT NOT NULL,
@@ -54,18 +44,14 @@ function migrate() {
   `);
 
   // ── Additive migrations for existing DBs ────────────────────────────────
-  // If the discussions table existed before follow_up columns were added,
-  // ALTER TABLE to add the missing columns safely.
-  const cols = db
-    .prepare("PRAGMA table_info(discussions)")
-    .all()
-    .map((c) => c.name);
+  const rs = await db.execute("PRAGMA table_info(discussions)");
+  const cols = rs.rows.map((c) => c.name);
 
   if (!cols.includes("follow_up_date")) {
-    db.exec("ALTER TABLE discussions ADD COLUMN follow_up_date TEXT");
+    await db.execute("ALTER TABLE discussions ADD COLUMN follow_up_date TEXT");
   }
   if (!cols.includes("follow_up_time")) {
-    db.exec("ALTER TABLE discussions ADD COLUMN follow_up_time TEXT");
+    await db.execute("ALTER TABLE discussions ADD COLUMN follow_up_time TEXT");
   }
 
   if (!isMemory) {

@@ -2,8 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const { migrate } = require("./db");
 
-// Run DB migrations (idempotent — safe to call multiple times)
-migrate();
+// DB migrations are now called asynchronously in index.js (and setup.js for tests)
+
 
 const app = express();
 

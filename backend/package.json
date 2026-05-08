@@ -11,13 +11,17 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "setupFiles": ["./src/__tests__/setup.js"],
-    "testMatch": ["**/__tests__/**/*.test.js"]
+    "setupFiles": [
+      "./src/__tests__/setup.js"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.test.js"
+    ]
   },
   "dependencies": {
-    "better-sqlite3": "^12.9.0",
+    "@libsql/client": "^0.17.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.6.1",
     "express": "^4.19.2"
   },
   "devDependencies": {
@@ -25,4 +29,3 @@
     "supertest": "^7.2.2"
   }
 }
-

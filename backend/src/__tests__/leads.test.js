@@ -1,21 +1,27 @@
 const request = require("supertest");
 const { randomUUID } = require("crypto");
 
-// app.js triggers migrate() → tables exist in :memory: DB
 const app = require("../app");
-const { db } = require("../db");
+const { db, migrate } = require("../db");
 
 // ─── Shared test state ────────────────────────────────────────────────────────
 
 let seededLeadId;
 
-beforeAll(() => {
+beforeAll(async () => {
+  await migrate();
+  await db.execute("DELETE FROM discussions");
+  await db.execute("DELETE FROM leads");
+
   // Seed one known lead so ID-based tests have a real target
   seededLeadId = randomUUID();
-  db.prepare(`
-    INSERT INTO leads (id, name, company, phone, status)
-    VALUES (?, ?, ?, ?, ?)
-  `).run(seededLeadId, "Ada Lovelace", "Babbage Co", "+1-555-9999", "New");
+  await db.execute({
+    sql: `
+      INSERT INTO leads (id, name, company, phone, status)
+      VALUES (?, ?, ?, ?, ?)
+    `,
+    args: [seededLeadId, "Ada Lovelace", "Babbage Co", "+1-555-9999", "New"]
+  });
 });
 
 afterAll(() => {
@@ -153,9 +159,11 @@ describe("POST /api/leads/:id/discussions — follow_up_date sync", () => {
     expect(res.body.follow_up_time).toBe(followUpTime);
 
     // Verify the lead's follow_up fields were also synced atomically
-    const lead = db
-      .prepare("SELECT follow_up_date, follow_up_time FROM leads WHERE id = ?")
-      .get(seededLeadId);
+    const result = await db.execute({
+      sql: "SELECT follow_up_date, follow_up_time FROM leads WHERE id = ?",
+      args: [seededLeadId]
+    });
+    const lead = result.rows[0];
 
     expect(lead.follow_up_date).toBe(followUpDate);
     expect(lead.follow_up_time).toBe(followUpTime);

@@ -2,12 +2,14 @@ require("dotenv").config();
 const { randomUUID } = require("crypto");
 const { db, migrate } = require("./db");
 
-// Ensure tables exist before seeding
-migrate();
+async function seed() {
+  // Ensure tables exist before seeding
+  await migrate();
 
-function seed() {
   // Guard: skip if any leads already exist
-  const { count } = db.prepare("SELECT COUNT(*) as count FROM leads").get();
+  const res = await db.execute("SELECT COUNT(*) as count FROM leads");
+  const count = res.rows[0].count;
+  
   if (count > 0) {
     console.log(`⏭️  Seed skipped — ${count} lead(s) already in database.`);
     return;
@@ -69,16 +71,6 @@ function seed() {
     },
   ];
 
-  const insertLead = db.prepare(`
-    INSERT INTO leads (id, name, company, phone, status, follow_up_date, follow_up_time, created_at)
-    VALUES (@id, @name, @company, @phone, @status, @follow_up_date, @follow_up_time, @created_at)
-  `);
-
-  const insertDiscussion = db.prepare(`
-    INSERT INTO discussions (id, lead_id, note, follow_up_date, follow_up_time, created_at)
-    VALUES (@id, @lead_id, @note, @follow_up_date, @follow_up_time, @created_at)
-  `);
-
   const discussionsData = [
     // Sarah Connor — Acme Corp
     {
@@ -125,35 +117,55 @@ function seed() {
     },
   ];
 
-  // Insert all leads and discussions in a single transaction
-  const seedAll = db.transaction(() => {
+  const tx = await db.transaction("write");
+
+  try {
     for (const lead of leadsData) {
-      insertLead.run(lead);
+      await tx.execute({
+        sql: `
+          INSERT INTO leads (id, name, company, phone, status, follow_up_date, follow_up_time, created_at)
+          VALUES (:id, :name, :company, :phone, :status, :follow_up_date, :follow_up_time, :created_at)
+        `,
+        args: lead
+      });
     }
 
     for (const { lead: leadName, notes } of discussionsData) {
-      const { id: leadId } = db
-        .prepare("SELECT id FROM leads WHERE name = ?")
-        .get(leadName);
+      const res = await tx.execute({
+        sql: "SELECT id FROM leads WHERE name = ?",
+        args: [leadName]
+      });
+      const leadId = res.rows[0].id;
 
       for (const { note, created_at, follow_up_date = null, follow_up_time = null } of notes) {
-        insertDiscussion.run({
-          id: randomUUID(),
-          lead_id: leadId,
-          note,
-          follow_up_date,
-          follow_up_time,
-          created_at,
+        await tx.execute({
+          sql: `
+            INSERT INTO discussions (id, lead_id, note, follow_up_date, follow_up_time, created_at)
+            VALUES (:id, :lead_id, :note, :follow_up_date, :follow_up_time, :created_at)
+          `,
+          args: {
+            id: randomUUID(),
+            lead_id: leadId,
+            note,
+            follow_up_date,
+            follow_up_time,
+            created_at,
+          }
         });
       }
     }
-  });
+    
+    await tx.commit();
+  } catch (e) {
+    await tx.rollback();
+    console.error("Failed to seed database", e);
+    process.exit(1);
+  }
 
-  seedAll();
-
-  const totalLeads = db.prepare("SELECT COUNT(*) as c FROM leads").get().c;
-  const totalDisc  = db.prepare("SELECT COUNT(*) as c FROM discussions").get().c;
-  console.log(`🌱 Seeded ${totalLeads} leads and ${totalDisc} discussions successfully.`);
+  const resLeads = await db.execute("SELECT COUNT(*) as c FROM leads");
+  const resDisc = await db.execute("SELECT COUNT(*) as c FROM discussions");
+  
+  console.log(`🌱 Seeded ${resLeads.rows[0].c} leads and ${resDisc.rows[0].c} discussions successfully.`);
 }
 
-seed();
+seed().catch(console.error);
