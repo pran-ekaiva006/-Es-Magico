@@ -197,11 +197,11 @@ router.post("/:id/discussions", (req, res) => {
     const discussionId = randomUUID();
 
     const insertAndSync = db.transaction(() => {
-      // Insert discussion
+      // Insert discussion (including follow-up metadata for timeline display)
       db.prepare(`
-        INSERT INTO discussions (id, lead_id, note)
-        VALUES (@id, @lead_id, @note)
-      `).run({ id: discussionId, lead_id: id, note: note.trim() });
+        INSERT INTO discussions (id, lead_id, note, follow_up_date, follow_up_time)
+        VALUES (@id, @lead_id, @note, @follow_up_date, @follow_up_time)
+      `).run({ id: discussionId, lead_id: id, note: note.trim(), follow_up_date, follow_up_time });
 
       // Sync follow-up back onto the lead if provided
       if (follow_up_date) {

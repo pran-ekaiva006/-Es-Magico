@@ -148,7 +148,11 @@ describe("POST /api/leads/:id/discussions — follow_up_date sync", () => {
     expect(res.body.lead_id).toBe(seededLeadId);
     expect(res.body.note).toBe("Discussed pricing. Will get back by June 1.");
 
-    // Verify the lead's follow_up fields were updated atomically
+    // Verify follow-up metadata is stored ON the discussion row
+    expect(res.body.follow_up_date).toBe(followUpDate);
+    expect(res.body.follow_up_time).toBe(followUpTime);
+
+    // Verify the lead's follow_up fields were also synced atomically
     const lead = db
       .prepare("SELECT follow_up_date, follow_up_time FROM leads WHERE id = ?")
       .get(seededLeadId);

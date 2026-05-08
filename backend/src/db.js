@@ -43,10 +43,12 @@ function migrate() {
     );
 
     CREATE TABLE IF NOT EXISTS discussions (
-      id         TEXT PRIMARY KEY,
-      lead_id    TEXT NOT NULL,
-      note       TEXT,
-      created_at DATETIME NOT NULL DEFAULT (datetime('now')),
+      id             TEXT PRIMARY KEY,
+      lead_id        TEXT NOT NULL,
+      note           TEXT,
+      follow_up_date TEXT,
+      follow_up_time TEXT,
+      created_at     DATETIME NOT NULL DEFAULT (datetime('now')),
       FOREIGN KEY (lead_id) REFERENCES leads (id) ON DELETE CASCADE
     );
   `);

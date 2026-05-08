@@ -75,8 +75,8 @@ function seed() {
   `);
 
   const insertDiscussion = db.prepare(`
-    INSERT INTO discussions (id, lead_id, note, created_at)
-    VALUES (@id, @lead_id, @note, @created_at)
+    INSERT INTO discussions (id, lead_id, note, follow_up_date, follow_up_time, created_at)
+    VALUES (@id, @lead_id, @note, @follow_up_date, @follow_up_time, @created_at)
   `);
 
   const discussionsData = [
@@ -84,43 +84,43 @@ function seed() {
     {
       lead: "Sarah Connor",
       notes: [
-        { note: "Initial call — Sarah is evaluating 3 vendors. She liked our pricing model and asked for a full proposal.", created_at: "2026-04-10 09:30:00" },
-        { note: "Sent proposal via email. Highlighted our enterprise tier and 30-day onboarding support.", created_at: "2026-04-15 14:00:00" },
-        { note: "Follow-up call scheduled for today. Sarah mentioned budget approval is pending sign-off from her CFO.", created_at: "2026-04-28 10:00:00" },
+        { note: "Initial call — Sarah is evaluating 3 vendors. She liked our pricing model and asked for a full proposal.", created_at: "2026-04-10 09:30:00", follow_up_date: null, follow_up_time: null },
+        { note: "Sent proposal via email. Highlighted our enterprise tier and 30-day onboarding support.", created_at: "2026-04-15 14:00:00", follow_up_date: null, follow_up_time: null },
+        { note: "Follow-up call scheduled for today. Sarah mentioned budget approval is pending sign-off from her CFO.", created_at: "2026-04-28 10:00:00", follow_up_date: today, follow_up_time: "14:00" },
       ],
     },
     // Hank Scorpio — Globex
     {
       lead: "Hank Scorpio",
       notes: [
-        { note: "Inbound inquiry via website. Hank is looking for a CRM replacement for his sales team of 12.", created_at: "2026-04-18 11:45:00" },
-        { note: "Sent product overview deck. He opened it twice — good engagement signal.", created_at: "2026-04-20 09:00:00" },
+        { note: "Inbound inquiry via website. Hank is looking for a CRM replacement for his sales team of 12.", created_at: "2026-04-18 11:45:00", follow_up_date: null, follow_up_time: null },
+        { note: "Sent product overview deck. He opened it twice — good engagement signal.", created_at: "2026-04-20 09:00:00", follow_up_date: null, follow_up_time: null },
       ],
     },
     // Bill Lumbergh — Initech
     {
       lead: "Bill Lumbergh",
       notes: [
-        { note: "Cold outreach — left voicemail. Bill's EA replied to email saying he'd review by end of week.", created_at: "2026-04-22 14:15:00" },
-        { note: "Second follow-up email sent. Mentioned the Q2 discount offer ending May 15.", created_at: "2026-04-29 10:30:00" },
-        { note: "Brief chat — Bill asked about TPS report integration. Forwarding to technical team for a compatibility check.", created_at: "2026-05-03 15:00:00" },
+        { note: "Cold outreach — left voicemail. Bill's EA replied to email saying he'd review by end of week.", created_at: "2026-04-22 14:15:00", follow_up_date: null, follow_up_time: null },
+        { note: "Second follow-up email sent. Mentioned the Q2 discount offer ending May 15.", created_at: "2026-04-29 10:30:00", follow_up_date: "2026-05-06", follow_up_time: "10:00" },
+        { note: "Brief chat — Bill asked about TPS report integration. Forwarding to technical team for a compatibility check.", created_at: "2026-05-03 15:00:00", follow_up_date: null, follow_up_time: null },
       ],
     },
     // Bruce Wayne — Wayne Enterprises
     {
       lead: "Bruce Wayne",
       notes: [
-        { note: "Enterprise demo completed. Bruce and his team were impressed by the automation workflows.", created_at: "2026-04-25 11:00:00" },
-        { note: "Legal team reviewed the MSA. Minor redlines on data retention clause — resolved in our favour.", created_at: "2026-04-30 16:00:00" },
-        { note: "Contract signed. Onboarding kickoff scheduled for May 12. 🎉", created_at: "2026-05-05 09:00:00" },
+        { note: "Enterprise demo completed. Bruce and his team were impressed by the automation workflows.", created_at: "2026-04-25 11:00:00", follow_up_date: null, follow_up_time: null },
+        { note: "Legal team reviewed the MSA. Minor redlines on data retention clause — resolved in our favour.", created_at: "2026-04-30 16:00:00", follow_up_date: null, follow_up_time: null },
+        { note: "Contract signed. Onboarding kickoff scheduled for May 12. 🎉", created_at: "2026-05-05 09:00:00", follow_up_date: "2026-05-12", follow_up_time: "09:00" },
       ],
     },
     // Tony Stark — Stark Industries
     {
       lead: "Tony Stark",
       notes: [
-        { note: "Referral from Bruce Wayne. Tony wants API access and custom webhook support — priority lead.", created_at: "2026-05-01 16:30:00" },
-        { note: "Technical call with Tony's engineering lead (Pepper's team). They need SSO via Okta — we confirmed support.", created_at: "2026-05-05 14:00:00" },
+        { note: "Referral from Bruce Wayne. Tony wants API access and custom webhook support — priority lead.", created_at: "2026-05-01 16:30:00", follow_up_date: null, follow_up_time: null },
+        { note: "Technical call with Tony's engineering lead (Pepper's team). They need SSO via Okta — we confirmed support.", created_at: "2026-05-05 14:00:00", follow_up_date: null, follow_up_time: null },
       ],
     },
   ];
@@ -136,11 +136,13 @@ function seed() {
         .prepare("SELECT id FROM leads WHERE name = ?")
         .get(leadName);
 
-      for (const { note, created_at } of notes) {
+      for (const { note, created_at, follow_up_date = null, follow_up_time = null } of notes) {
         insertDiscussion.run({
           id: randomUUID(),
           lead_id: leadId,
           note,
+          follow_up_date,
+          follow_up_time,
           created_at,
         });
       }
