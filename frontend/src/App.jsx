@@ -5,7 +5,7 @@ import AddLeadModal from "./components/AddLeadModal";
 import LeadTimelineDialog from "./components/LeadTimelineDialog";
 import "./App.css";
 
-const FILTER_OPTIONS = ["All", "New", "Contacted", "Qualified", "Proposal Sent"];
+const FILTER_OPTIONS = ["All", "New", "Contacted", "Qualified", "Proposal Sent", "Won", "Lost"];
 
 export default function App() {
   // ── State ──────────────────────────────────────────────────────────────────
